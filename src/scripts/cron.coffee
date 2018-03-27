@@ -5,7 +5,8 @@
 #   hubot new job "<crontab format>" <message> - Schedule a cron job to say something
 #   hubot new job <crontab format> "<message>" - Ditto
 #   hubot new job <crontab format> say <message> - Ditto
-#   hubot list jobs - List current cron jobs
+#   hubot list jobs - List current cron jobs on the channel
+#   hubot list all jobs - List all cron jobs
 #   hubot remove job <id> - remove job
 #   hubot remove job with message <message> - remove with message
 #
@@ -99,6 +100,11 @@ module.exports = (robot) ->
         text += "#{id}: #{job.pattern} @#{room} \"#{job.message}\"\n"
     text = robot.adapter.removeFormatting text if robot.adapterName == 'slack'
     msg.send text if text.length > 0
+
+  robot.respond /(?:list|ls) all jobs?/i, (msg) ->
+    for id, job of JOBS
+      room = job.user.reply_to || job.user.room
+      msg.send "#{id}: #{job.pattern} @#{room} \"#{job.message}\""
 
   robot.respond /(?:rm|remove|del|delete) job (\d+)/i, (msg) ->
     if (id = msg.match[1]) and unregisterJob(robot, id)
